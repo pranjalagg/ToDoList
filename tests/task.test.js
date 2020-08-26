@@ -7,6 +7,7 @@ const {
 	userTwoId,
 	userTwo,
 	taskOne,
+	taskTwo,
 	setupDatabase
 } = require('./fixtures/db')
 
@@ -36,11 +37,53 @@ test('Should fetch all user tasks', async () => {
 
 test('Should not delete other user\'s task', async () => {
 	await request(app)
-		.delete('/tasks/:' + taskOne._id)
+		.delete('/tasks/' + taskOne._id)
 		.set('Authorization', `Bearer ${userTwo.tokens[0].token}`)
 		.send()
-		.expect(500)
+		.expect(404)
 
 	const task = await Task.findById(taskOne._id)
 	expect(task).not.toBeNull()
+})
+
+test('Should delete user task', async () => {
+	await request(app)
+		.delete(`/tasks/${taskOne._id}`)
+		.set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+		.send()
+		.expect(200)
+})
+
+test('Should not delete task if unauthenticated', async () => {
+	await request(app)
+		.delete(`/task/${taskOne._id}`)
+		.send()
+		.expect(404)
+})
+
+test('Should not update other user\'s task', async () => {
+	await request(app)
+		.patch(`/tasks/${taskTwo._id}`)
+		.set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+		.send({
+			completed: true
+		})
+		.expect(404)
+
+})
+
+test("Should fetch user task by ID", async () => {
+	await request(app)
+		.get('/tasks/' + taskTwo._id)
+		.set('Authorization', `Bearer ${userTwo.tokens[0].token}`)
+		.send()
+		.expect(200)
+})
+
+test('Should not fetch other user\'s task by ID', async () => {
+	await request(app)
+		.get(`/tasks/${userTwo._id}`)
+		.set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+		.send()
+		.expect(404)
 })
