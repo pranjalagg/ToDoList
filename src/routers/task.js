@@ -18,7 +18,7 @@ router.post('/tasks', auth, async (req, res) => {
 	}
 })
 
-// GET /taks?completed=true
+// GET /tasks?completed=true
 // GET /tasks?limit=10&skip=20
 // GET /tasks?sortBy=createdAt:desc
 router.get('/tasks', auth, async (req, res) => {
@@ -53,7 +53,7 @@ router.get('/tasks', auth, async (req, res) => {
 
 router.get('/tasks/:id', auth, async (req, res) => {
 	const _id = req.params.id
-	
+
 	try {
 		// const task = await Task.findById(_id)
 		const task = await Task.findOne({ _id, owner: req.user._id })
